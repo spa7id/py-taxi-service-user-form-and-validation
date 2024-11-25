@@ -110,7 +110,13 @@ class CarAssignDriverView(LoginRequiredMixin, generic.View):
     @staticmethod
     def post(request: HttpRequest, pk: int) -> HttpResponseRedirect:
         car = get_object_or_404(Car, id=pk)
-        car.drivers.add(request.user)
+
+        if hasattr(request.user, "driver_profile"):
+            car.drivers.add(request.user)
+        else:
+            from django.contrib import messages
+            messages.error(request, "You must be a driver to join this car.")
+
         return redirect("taxi:car-detail", pk=pk)
 
 
@@ -118,5 +124,12 @@ class CarRemoveDriverView(LoginRequiredMixin, generic.View):
     @staticmethod
     def post(request: HttpRequest, pk: int) -> HttpResponseRedirect:
         car = get_object_or_404(Car, id=pk)
-        car.drivers.remove(request.user)
+
+        if hasattr(request.user, "driver_profile"):
+            car.drivers.remove(request.user)
+        else:
+            from django.contrib import messages
+            messages.error(request,
+                           "You must be a driver to be removed from this car.")
+
         return redirect("taxi:car-detail", pk=pk)
